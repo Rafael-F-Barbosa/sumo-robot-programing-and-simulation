@@ -34,21 +34,18 @@ errorRightMotor, rightMotor = sim.simxGetObjectHandle(
 # Get sensor handlers
 errorLeftSensor, leftSensor = sim.simxGetObjectHandle(
     clientID, "Pioneer_p3dx_ultrasonicSensor9", sim.simx_opmode_oneshot_wait)
-errorRightSensor, rightSensor = sim.simxGetObjectHandle(
-    clientID, "Pioneer_p3dx_ultrasonicSensor16", sim.simx_opmode_oneshot_wait)
-errorFrontSensor, frontSensor = sim.simxGetObjectHandle(
+
+errorFrontalSensor, frontalSensor = sim.simxGetObjectHandle(
     clientID, "Pioneer_p3dx_ultrasonicSensor13", sim.simx_opmode_oneshot_wait)
 
 # Infrared sensor
 errorInfraredSensor, infraredSensor = sim.simxGetObjectHandle(
     clientID, "Vision_sensor", sim.simx_opmode_oneshot_wait)
 
-# Print in handlers connections
-print("Handlers: (0 == alright)")
-print(errorLeftMotor, errorRightMotor, errorLeftSensor, errorRightSensor, errorFrontSensor, errorInfraredSensor)
+# Print possible errors when gettint handlers
+print(errorLeftMotor, errorRightMotor, errorLeftSensor, errorInfraredSensor, errorFrontalSensor)
 
 
-# Function to set a velocity
 def setVelocity(leftV, rightV, clientID, rightMotor, leftMotor):
     sim.simxSetJointTargetVelocity(
         clientID, leftMotor, leftV, sim.simx_opmode_oneshot_wait)
@@ -59,6 +56,7 @@ def setVelocity(leftV, rightV, clientID, rightMotor, leftMotor):
 def turn(direction, clientID, rightMotor, leftMotor):
 
     time_multiplier = 5;
+
     if(direction == 'left'):
         setVelocity(-1*time_multiplier, time_multiplier, clientID, rightMotor, leftMotor)
         time.sleep(1/time_multiplier)
@@ -72,58 +70,72 @@ def turn(direction, clientID, rightMotor, leftMotor):
         time.sleep(1/time_multiplier)
         setVelocity(0, 0, clientID, rightMotor, leftMotor)
 
-# Read sensors first time
-def initializeSensors(clientID, leftSensor, rightSensor, frontSensor, infraredSensor):
+# Sensor initialization
+def initializeSensors(clientID, leftSensor, infraredSensor, frontalSensor):
+
+    # Roda a leitura do sensor de proximidade esquerdo pela primeira vez
     returnCode, detectionState, detectedPoint, detectedObjectHandle, detectedSurfaceNormalVector = sim.simxReadProximitySensor(
         clientID, leftSensor, sim.simx_opmode_streaming)
+    
+    # Roda a leitura do sensor de proximidade esquerdo pela primeira vez
     returnCode, detectionState, detectedPoint, detectedObjectHandle, detectedSurfaceNormalVector = sim.simxReadProximitySensor(
-        clientID, rightSensor, sim.simx_opmode_streaming)
-    returnCode, detectionState, detectedPoint, detectedObjectHandle, detectedSurfaceNormalVector = sim.simxReadProximitySensor(
-        clientID, frontSensor, sim.simx_opmode_streaming)
+        clientID, frontalSensor, sim.simx_opmode_streaming)
 
-    returnCode, resolution, image = sim.simxGetVisionSensorImage(clientID,infraredSensor, 1, sim.simx_opmode_streaming)
+    # Roda a leitura do sensor infravermelho pela primeira vez
+    # returnCode, resolution, image = sim.simxGetVisionSensorImage(clientID,infraredSensor, 1, sim.simx_opmode_streaming)
+
+    # print(returnCode, resolution, image)
 
 
 
-# Main ----------------------------------------------------------------------------------------------------
-sim.simxAddStatusbarMessage(clientID, "Main program started!", sim.simx_opmode_oneshot_wait)
-initializeSensors(clientID, leftSensor, rightSensor, frontSensor, infraredSensor)
+# Main ----------------------------------------------------------------------------------
 
-# Simulate for 60 seconds
-finalTime = time.time() + 60
+# turn('180', clientID, rightMotor, leftMotor)
+
+sim.simxAddStatusbarMessage(clientID, "Success!", sim.simx_opmode_oneshot_wait)
+
+initializeSensors(clientID, leftSensor, infraredSensor, frontalSensor)
+
+
+
+
+sim.simxAddStatusbarMessage(clientID, "Done!", sim.simx_opmode_oneshot_wait)
+
+finalTime = time.time() + 10
+
 while(time.time() < finalTime):
     
-    # Go ahead
-    setVelocity(-4, -4, clientID, rightMotor, leftMotor)
+    # Anda de boas
+    # setVelocity(-2, -2, clientID, rightMotor, leftMotor)
 
-    # Read sensors
-    returnCode, resolution, image = sim.simxGetVisionSensorImage(clientID,infraredSensor, 1, sim.simx_opmode_buffer)
-    returnCodeLeft, detectionStateLeft, detectedPointLeft, detectedObjectHandLeft, detectedSurfaceNormalVectorLeft = sim.simxReadProximitySensor(
-        clientID, leftSensor, sim.simx_opmode_buffer)
-    returnCodeRight, detectionStateRight, detectedPointRight, detectedObjectHandRight, detectedSurfaceNormalVectorRight = sim.simxReadProximitySensor(
-        clientID, rightSensor, sim.simx_opmode_buffer)
-    returnCodeFront, detectionStateFront, detectedPointFront, detectedObjectHandFront, detectedSurfaceNormalVectorFront = sim.simxReadProximitySensor(
-        clientID, frontSensor, sim.simx_opmode_buffer)
+    # Lê sensor de infravermelho (imagem na verdade)
+    # returnCode, resolution, image = sim.simxGetVisionSensorImage(clientID,infraredSensor, 1, sim.simx_opmode_buffer)
+    # print(abs(np.mean(image)))
 
-
-
-    # Basic funcionality
+    returnCode, detectionState, detectedPoint, detectedObjectHandle, detectedSurfaceNormalVector = sim.simxReadProximitySensor(
+        clientID, frontalSensor, sim.simx_opmode_streaming)
     
-    if(abs(np.mean(image)) < 30):
-        setVelocity(0, 0, clientID, rightMotor, leftMotor)
-        turn('180', clientID, leftMotor, rightMotor)
-        sim.simxAddStatusbarMessage(clientID, "Detectei linha!!!!"+"-"+str(np.mean(image)), sim.simx_opmode_oneshot_wait)
-    elif(detectionStateLeft):
-        turn('left', clientID, rightMotor,leftMotor)
-        sim.simxAddStatusbarMessage(clientID, "Adversário à esquerda!!!!"+"-"+str(np.mean(image)), sim.simx_opmode_oneshot_wait)
-    elif(detectionStateRight):
-        turn('right', clientID, rightMotor,leftMotor)
-        sim.simxAddStatusbarMessage(clientID, "Adversário à direita!!!!"+"-"+str(np.mean(image)), sim.simx_opmode_oneshot_wait)
+    print(detectedObjectHandle)
+
+    if(detectedObjectHandle != 14):
+        sim.simxAddStatusbarMessage(clientID, "Detectei linha!"+"-"+str(np.mean(image)), sim.simx_opmode_oneshot_wait)
+
     
+    # if(abs(np.mean(image)) < 15):
+
+        # print('Linha detectada!')
+
+        # setVelocity(0, 0, clientID, rightMotor, leftMotor)
+
+        # turn('180', clientID, leftMotor, rightMotor)
+
+        # sim.simxAddStatusbarMessage(clientID, "Detectei linha!"+"-"+str(np.mean(image)), sim.simx_opmode_oneshot_wait)
+
+        # time.sleep(0.5)
+            
 
 
-
-
+print("Cabou")
 # Para
 setVelocity(0, 0, clientID, rightMotor, leftMotor) 
 
