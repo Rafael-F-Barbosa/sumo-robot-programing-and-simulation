@@ -43,9 +43,13 @@ errorFrontSensor, frontSensor = sim.simxGetObjectHandle(
 errorInfraredSensor, infraredSensor = sim.simxGetObjectHandle(
     clientID, "Vision_sensor", sim.simx_opmode_oneshot_wait)
 
+# Emergency Button
+errorEmergencySensor, emergencySensor = sim.simxGetObjectHandle(
+    clientID, "EmergencySensor", sim.simx_opmode_oneshot_wait)
+
 # Print in handlers connections
 print("Handlers: (0 == alright)")
-print(errorLeftMotor, errorRightMotor, errorLeftSensor, errorRightSensor, errorFrontSensor, errorInfraredSensor)
+print(errorLeftMotor, errorRightMotor, errorLeftSensor, errorRightSensor, errorFrontSensor, errorInfraredSensor, errorEmergencySensor)
 
 
 # Function to set a velocity
@@ -73,24 +77,30 @@ def turn(direction, clientID, rightMotor, leftMotor):
         setVelocity(0, 0, clientID, rightMotor, leftMotor)
 
 # Read sensors first time
-def initializeSensors(clientID, leftSensor, rightSensor, frontSensor, infraredSensor):
+def initializeSensors(clientID, leftSensor, rightSensor, frontSensor, infraredSensor, emergencySensor):
+    # Car sensors
     returnCode, detectionState, detectedPoint, detectedObjectHandle, detectedSurfaceNormalVector = sim.simxReadProximitySensor(
         clientID, leftSensor, sim.simx_opmode_streaming)
     returnCode, detectionState, detectedPoint, detectedObjectHandle, detectedSurfaceNormalVector = sim.simxReadProximitySensor(
         clientID, rightSensor, sim.simx_opmode_streaming)
     returnCode, detectionState, detectedPoint, detectedObjectHandle, detectedSurfaceNormalVector = sim.simxReadProximitySensor(
         clientID, frontSensor, sim.simx_opmode_streaming)
-
     returnCode, resolution, image = sim.simxGetVisionSensorImage(clientID,infraredSensor, 1, sim.simx_opmode_streaming)
+
+    # Emergency Sensor - Remote control
+    returnCode, detectionState, detectedPoint, detectedObjectHandle, detectedSurfaceNormalVector = sim.simxReadProximitySensor(
+        clientID, emergencySensor, sim.simx_opmode_streaming)
+
 
 
 
 # Main ----------------------------------------------------------------------------------------------------
 sim.simxAddStatusbarMessage(clientID, "Main program started!", sim.simx_opmode_oneshot_wait)
-initializeSensors(clientID, leftSensor, rightSensor, frontSensor, infraredSensor)
+
+initializeSensors(clientID, leftSensor, rightSensor, frontSensor, infraredSensor, emergencySensor)
 
 # Simulate for 60 seconds
-finalTime = time.time() + 60
+finalTime = time.time() + 30
 while(time.time() < finalTime):
     
     # Go ahead
@@ -104,15 +114,21 @@ while(time.time() < finalTime):
         clientID, rightSensor, sim.simx_opmode_buffer)
     returnCodeFront, detectionStateFront, detectedPointFront, detectedObjectHandFront, detectedSurfaceNormalVectorFront = sim.simxReadProximitySensor(
         clientID, frontSensor, sim.simx_opmode_buffer)
-
+    
+    # Emergency Sensor 
+    returnCodeEmergency, detectionStateEmergency, detectedPointEmergency, detectedObjectHandEmergency, detectedSurfaceNormalVectorEmergency = sim.simxReadProximitySensor(
+        clientID, emergencySensor, sim.simx_opmode_buffer)
 
 
     # Basic funcionality
-    
     if(abs(np.mean(image)) < 30):
         setVelocity(0, 0, clientID, rightMotor, leftMotor)
         turn('180', clientID, leftMotor, rightMotor)
         sim.simxAddStatusbarMessage(clientID, "Detectei linha!!!!"+"-"+str(np.mean(image)), sim.simx_opmode_oneshot_wait)
+    elif(detectionStateEmergency): # Emergência tá com prioridade menor que linha aqui, mas era só pra testar
+        sim.simxAddStatusbarMessage(clientID, "Emergência, irmão, para tudo!!!!", sim.simx_opmode_oneshot_wait)
+        print("Emergência - Finalizando programa")
+        break;
     elif(detectionStateLeft):
         turn('left', clientID, rightMotor,leftMotor)
         sim.simxAddStatusbarMessage(clientID, "Adversário à esquerda!!!!"+"-"+str(np.mean(image)), sim.simx_opmode_oneshot_wait)
@@ -122,22 +138,8 @@ while(time.time() < finalTime):
     
 
 
-
-
-# Para
+# Stop robot
 setVelocity(0, 0, clientID, rightMotor, leftMotor) 
 
-
-
-
-# Uso de sensores
-# count = 0
-# while True:
-#     returnCode, detectionState, detectedPoint, detectedObjectHandle, detectedSurfaceNormalVecto = sim.simxReadProximitySensor(
-#         clientID, infraredSensor, sim.simx_opmode_buffer)
-
-#     print(detectedObjectHandle)
-#     if(detectionState):
-#         count += 1
-#         sim.simxAddStatusbarMessage(
-#             clientID, "Detectei algo!"+str(count), sim.simx_opmode_oneshot_wait)
+# Ends communication with server
+sim.simxFinish(clientID)
