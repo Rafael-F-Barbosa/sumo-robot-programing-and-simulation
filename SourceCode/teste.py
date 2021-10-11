@@ -4,7 +4,9 @@ import time
 import numpy as np
 
 # Interface between python and Coppelia
-sys.path.append('/home/rafael-barbosa/ptr_project/PyBinding')
+#sys.path.append('/home/rafael-barbosa/ptr_project/PyBinding')
+sys.path.append('/Users/admin/Documents/Mecatronica/8o semestre/PTR/Projeto 2/codigo')
+
 import sim  
 
 # Just in case, close all opened connections
@@ -135,6 +137,9 @@ while(time.time() < finalTime):
     elif(detectionStateRight):
         turn('right', clientID, rightMotor,leftMotor)
         sim.simxAddStatusbarMessage(clientID, "Adversário à direita!!!!"+"-"+str(np.mean(image)), sim.simx_opmode_oneshot_wait)
+    elif(detectionStateFront):
+        setVelocity(-7, -7, clientID, rightMotor, leftMotor)
+        sim.simxAddStatusbarMessage(clientID, "Adversário à Frente!!!!"+"-"+str(np.mean(image)), sim.simx_opmode_oneshot_wait)
     
 
 

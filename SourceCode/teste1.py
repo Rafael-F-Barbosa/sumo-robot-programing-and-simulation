@@ -4,7 +4,9 @@ import time
 import numpy as np
 
 # Interface between python and Coppelia
-sys.path.append('/home/rafael-barbosa/ptr_project/PyBinding')
+#sys.path.append('/home/rafael-barbosa/ptr_project/PyBinding')
+sys.path.append('/Users/admin/Documents/Mecatronica/8o semestre/PTR/Projeto 2/codigo')
+
 import sim  
 
 # Just in case, close all opened connections
