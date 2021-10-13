@@ -2,6 +2,8 @@
 import sys  
 import time 
 import numpy as np
+ 
+
 
 # Interface between python and Coppelia
 #sys.path.append('/home/rafael-barbosa/ptr_project/PyBinding')
@@ -49,9 +51,14 @@ errorInfraredSensor, infraredSensor = sim.simxGetObjectHandle(
 errorEmergencySensor, emergencySensor = sim.simxGetObjectHandle(
     clientID, "EmergencySensor", sim.simx_opmode_oneshot_wait)
 
+# Temperature sensor
+errorTemperatureSensor, temperatureSensor = sim.simxGetObjectHandle(
+    clientID, "TemperatureSensor", sim.simx_opmode_oneshot_wait)
+
+
 # Print in handlers connections
 print("Handlers: (0 == alright)")
-print(errorLeftMotor, errorRightMotor, errorLeftSensor, errorRightSensor, errorFrontSensor, errorInfraredSensor, errorEmergencySensor)
+print(errorLeftMotor, errorRightMotor, errorLeftSensor, errorRightSensor, errorFrontSensor, errorInfraredSensor, errorEmergencySensor, errorTemperatureSensor)
 
 
 # Function to set a velocity
@@ -60,6 +67,7 @@ def setVelocity(leftV, rightV, clientID, rightMotor, leftMotor):
         clientID, leftMotor, leftV, sim.simx_opmode_oneshot_wait)
     sim.simxSetJointTargetVelocity(
         clientID, rightMotor, rightV, sim.simx_opmode_oneshot_wait)
+
 
 # Turn options right, left, 180
 def turn(direction, clientID, rightMotor, leftMotor):
@@ -77,9 +85,13 @@ def turn(direction, clientID, rightMotor, leftMotor):
         setVelocity(-1.15*time_multiplier, 1.15*time_multiplier, clientID, rightMotor, leftMotor)
         time.sleep(1/time_multiplier)
         setVelocity(0, 0, clientID, rightMotor, leftMotor)
+    elif(direction == 'back'):
+        setVelocity(1.15*time_multiplier, 1.15*time_multiplier, clientID, rightMotor, leftMotor)
+        time.sleep(1/time_multiplier)
+        setVelocity(0, 0, clientID, rightMotor, leftMotor)
 
 # Read sensors first time
-def initializeSensors(clientID, leftSensor, rightSensor, frontSensor, infraredSensor, emergencySensor):
+def initializeSensors(clientID, leftSensor, rightSensor, frontSensor, infraredSensor, emergencySensor, temperatureSensor):
     # Car sensors
     returnCode, detectionState, detectedPoint, detectedObjectHandle, detectedSurfaceNormalVector = sim.simxReadProximitySensor(
         clientID, leftSensor, sim.simx_opmode_streaming)
@@ -93,13 +105,34 @@ def initializeSensors(clientID, leftSensor, rightSensor, frontSensor, infraredSe
     returnCode, detectionState, detectedPoint, detectedObjectHandle, detectedSurfaceNormalVector = sim.simxReadProximitySensor(
         clientID, emergencySensor, sim.simx_opmode_streaming)
 
+    # Temperature Sensor - Remote control
+    returnCode, detectionStateTemp, detectedPoint, detectedObjectHandle, detectedSurfaceNormalVector = sim.simxReadProximitySensor(
+        clientID, temperatureSensor, sim.simx_opmode_streaming)
 
+
+# Function to read temperature
+def readTemperature(clientID, temperatureSensor):
+    returnCodeTemp, detectionStateTemp, detectedPointTemp, detectedObjectHandTemp, detectedSurfaceNormalVectorTemp = sim.simxReadProximitySensor(
+        clientID, temperatureSensor, sim.simx_opmode_buffer)
+    if(detectionStateTemp): 
+        sim.simxAddStatusbarMessage(clientID, "TEMPERATURA ALTA, irmão, para tudo!!!!", sim.simx_opmode_oneshot_wait)
+        print("Temperatura alta - Finalizando programa")
+        return 1
+    print('LI TEMPERATURA')
+    sim.simxAddStatusbarMessage(clientID, "LI TEMPERATURA", sim.simx_opmode_oneshot_wait)
+
+    return 0
 
 
 # Main ----------------------------------------------------------------------------------------------------
 sim.simxAddStatusbarMessage(clientID, "Main program started!", sim.simx_opmode_oneshot_wait)
 
-initializeSensors(clientID, leftSensor, rightSensor, frontSensor, infraredSensor, emergencySensor)
+initializeSensors(clientID, leftSensor, rightSensor, frontSensor, infraredSensor, emergencySensor, temperatureSensor)
+
+# Period - Read Temperature
+pReadTemperature = 3
+t1 = 0
+t2 = 0
 
 # Simulate for 60 seconds
 finalTime = time.time() + 30
@@ -107,6 +140,16 @@ while(time.time() < finalTime):
     
     # Go ahead
     setVelocity(-4, -4, clientID, rightMotor, leftMotor)
+
+    # Read Temperature  - IMPOSSIVEL FAZER POR THREAD
+    t1 = time.time()
+    if (t1 - t2) > 3:
+        high = readTemperature(clientID, temperatureSensor)
+        t2 = time.time()
+        if high:
+            break
+
+
 
     # Read sensors
     returnCode, resolution, image = sim.simxGetVisionSensorImage(clientID,infraredSensor, 1, sim.simx_opmode_buffer)
@@ -122,15 +165,17 @@ while(time.time() < finalTime):
         clientID, emergencySensor, sim.simx_opmode_buffer)
 
 
+
     # Basic funcionality
     if(abs(np.mean(image)) < 30):
         setVelocity(0, 0, clientID, rightMotor, leftMotor)
+        turn('back', clientID, leftMotor, rightMotor)
         turn('180', clientID, leftMotor, rightMotor)
         sim.simxAddStatusbarMessage(clientID, "Detectei linha!!!!"+"-"+str(np.mean(image)), sim.simx_opmode_oneshot_wait)
     elif(detectionStateEmergency): # Emergência tá com prioridade menor que linha aqui, mas era só pra testar
         sim.simxAddStatusbarMessage(clientID, "Emergência, irmão, para tudo!!!!", sim.simx_opmode_oneshot_wait)
         print("Emergência - Finalizando programa")
-        break;
+        break
     elif(detectionStateLeft):
         turn('left', clientID, rightMotor,leftMotor)
         sim.simxAddStatusbarMessage(clientID, "Adversário à esquerda!!!!"+"-"+str(np.mean(image)), sim.simx_opmode_oneshot_wait)
@@ -141,7 +186,6 @@ while(time.time() < finalTime):
         setVelocity(-7, -7, clientID, rightMotor, leftMotor)
         sim.simxAddStatusbarMessage(clientID, "Adversário à Frente!!!!"+"-"+str(np.mean(image)), sim.simx_opmode_oneshot_wait)
     
-
 
 # Stop robot
 setVelocity(0, 0, clientID, rightMotor, leftMotor) 
