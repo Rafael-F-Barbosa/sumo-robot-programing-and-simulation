@@ -4,11 +4,13 @@ import time
 import numpy as np
  
 
+# Adding directories for linux and mac
+if(sys.platform == "linux" or sys.platform == "linux2"):
+    sys.path.append('/home/rafael-barbosa/ptr_project/PyBinding')
+elif(sys.sys.platform == 'darwin'):
+    sys.path.append('/Users/admin/Documents/Mecatronica/8o semestre/PTR/Projeto 2/codigo')
 
 # Interface between python and Coppelia
-#sys.path.append('/home/rafael-barbosa/ptr_project/PyBinding')
-sys.path.append('/Users/admin/Documents/Mecatronica/8o semestre/PTR/Projeto 2/codigo')
-
 import sim  
 
 # Just in case, close all opened connections
