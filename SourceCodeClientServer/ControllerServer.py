@@ -18,7 +18,7 @@ import sim
 
 # Create server connection and listen 
 HOST = 'localhost'
-PORT = 50011
+PORT = 50013
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
     s.bind((HOST, PORT))
@@ -176,5 +176,3 @@ print("Program duration: ", time.time()-startTime)
 print("Server finished!")
 sim.simxAddStatusbarMessage(clientID, "ControllerFinished!", sim.simx_opmode_oneshot_wait)
 sim.simxFinish(clientID)
-
-

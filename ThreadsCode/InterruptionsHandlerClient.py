@@ -16,7 +16,7 @@ import sim
 
 # Connect to server controler
 HOST = 'localhost'
-PORT = 50013
+PORT = 50006
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
     s.connect((HOST, PORT))
@@ -107,7 +107,7 @@ while(time.time() < finalTime):
     returnCodeEmergency, detectionStateEmergency, detectedPointEmergency, detectedObjectHandEmergency, detectedSurfaceNormalVectorEmergency = sim.simxReadProximitySensor(
         clientID, emergencySensor, sim.simx_opmode_buffer)
 
-
+    
 
     # Sending information
     if(detectionStateEmergency):
@@ -115,14 +115,40 @@ while(time.time() < finalTime):
         break
     elif(abs(np.mean(image)) < 30):
         s.send(str.encode("LineDetected."))
+        print("Linha!")
     elif(detectionStateLeft):
         s.send(str.encode("EnemyOnLeft."))
+        print("Inimigo a esquerda!")
     elif(detectionStateRight):
         s.send(str.encode("EnemyOnRight."))
+        print("Inimigo a direita!")
     elif(detectionStateFront):
         s.send(str.encode("EnemyOnFront."))
+        print("Inimigo à frente!")
+    else:
+        print("Nada detectado")
+        s.send(str.encode("Nothing."))
 
-    time.sleep(0.01)
+
+    time.sleep(0.02)
+
+    # Debugging
+    # action = int(input("\nDigite: \n1-direita\n2-esq\n3-linha\n4-nda\n0-break"))
+    # if(action == 0):
+    #     s.send(str.encode("Break."))
+    #     break
+    # if(action == 1):
+    #     s.send(str.encode("EnemyOnRight."))  
+    # if(action == 2):
+    #     s.send(str.encode("EnemyOnLeft."))
+    # if(action == 3):
+    #     s.send(str.encode("LineDetected."))
+    
+    # if(action == 4):
+    #     s.send(str.encode("Nothing."))
+    
+    
+    
 
 
 # Ending program client and server
