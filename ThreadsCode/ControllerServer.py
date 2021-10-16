@@ -4,12 +4,23 @@ import time
 import numpy as np
 import socket
 import threading
- 
+import random 
+# Constants
+TIME_CONST = 5
+
+# Colors
+RED = "\033[1;31m"
+BLUE = "\033[1;34m"
+CYAN = "\033[1;36m"
+GREEN = "\033[0;32m"
+RESET = "\033[0;0m"
+BOLD = "\033[;1m"
+REVERSE = "\033[;7m"
 
 # Adding directories for linux and mac
 if(sys.platform == "linux" or sys.platform == "linux2"):
     sys.path.append('/home/rafael-barbosa/ptr_project/PyBinding')
-elif(sys.sys.platform == 'darwin'):
+elif(sys.platform == 'darwin'):
     sys.path.append('/Users/admin/Documents/Mecatronica/8o semestre/PTR/Projeto 2/codigo')
 
 # Module to connect python to Coppelia
@@ -18,7 +29,7 @@ import sim
 
 # Create server connection and listen 
 HOST = 'localhost'
-PORT = 50006
+PORT = 50007
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
     s.bind((HOST, PORT))
@@ -73,6 +84,10 @@ def initiateThread(direction, clientID, rightMotor, leftMotor):
         actionPriority  = clientRequests.index(direction)
         currentPriority = clientRequests.index(currentThreadName)
 
+        #pra debugar
+        print("CURRENT PRIORITY:", currentPriority)
+        print("ACTION PRIORITY:", actionPriority)
+
         # Se a tarefa for de prioridade inferior ou igual não executará
         if(currentPriority <= actionPriority):
             print("Action {} is less important or equal.".format(direction)) 
@@ -102,10 +117,7 @@ def initiateThread(direction, clientID, rightMotor, leftMotor):
         # Inicialize thread
         t.start()
 
-    elif(direction == 'LineDetected.'):
-        # Stops
-        setVelocity(0, 0, clientID, rightMotor, leftMotor)
-    
+    elif(direction == 'LineDetected.'):    
         # Criada thread de virar 180
         t = threading.Thread(target=turn180, name=direction, args=(clientID, rightMotor, leftMotor))
 
@@ -133,97 +145,126 @@ def setVelocity(leftV, rightV, clientID, rightMotor, leftMotor):
         clientID, rightMotor, rightV, sim.simx_opmode_oneshot_wait)
 
 # Threads
+
 def turnRight(clientID, rightMotor, leftMotor):
+    global currentThreadName
+    global stopCurrentThread
+    stopCurrentThread = False
+
     print("Thread: ", threading.current_thread().name, "started.")
-    timeConstant = 5 
 
     # Starts to turn
-    setVelocity(0.5*timeConstant, -0.5*timeConstant, clientID, rightMotor, leftMotor)
+    setVelocity(0.5*TIME_CONST, -0.5*TIME_CONST, clientID, rightMotor, leftMotor)
     
-    finalTime = time.time() + 1/timeConstant
+    finalTime = time.time() + 1/TIME_CONST
     while(time.time() < finalTime):
-        global stopCurrentThread
         if(stopCurrentThread):
             print("Thread: ", threading.current_thread().name, "stopped")
             stopCurrentThread = False
+            currentThreadName = ""
+
             # setVelocity(0, 0, clientID, rightMotor, leftMotor)
             return
 
     # Finalizes thread if not interrupted before
     print("Thread: ", threading.current_thread().name, "finished.")
-    global currentThreadName
     currentThreadName = ""
     setVelocity(0, 0, clientID, rightMotor, leftMotor)
 
 def turnLeft(clientID, rightMotor, leftMotor):
+    global currentThreadName
+    global stopCurrentThread
+    stopCurrentThread = False
+
     print("Thread", threading.current_thread().name, "started.")
-    timeConstant = 5
 
     # Starts to turn
-    setVelocity(-0.5*timeConstant, 0.5*timeConstant, clientID, rightMotor, leftMotor)
-    
-    finalTime = time.time() + (1/timeConstant)
+    setVelocity(-0.5*TIME_CONST, 0.5*TIME_CONST, clientID, rightMotor, leftMotor)
+
+    finalTime = time.time() + (1/TIME_CONST)
     while(time.time() < finalTime):
-        global stopCurrentThread
         if(stopCurrentThread):
             print("Thread: ", threading.current_thread().name, "stopped")
             stopCurrentThread = False
+            currentThreadName = ""
+
             # setVelocity(0, 0, clientID, rightMotor, leftMotor)
             return
 
     # Finalizes thread if not interrupted before
     print("Thread: ", threading.current_thread().name, "finished.")
-    global currentThreadName
     currentThreadName = ""
     setVelocity(0, 0, clientID, rightMotor, leftMotor)
 
 
 def turn180(clientID, rightMotor, leftMotor):
-    print("Thread: ", threading.current_thread().name, "started.")
-    timeConstant = 5 
-    
-    # Starts to turn
-    setVelocity(-1.0*timeConstant, 1.0*timeConstant, clientID, rightMotor, leftMotor)
-    
-    finalTime = time.time() + (1/timeConstant)
-    while(time.time() < finalTime):
-        global stopCurrentThread
-        if(stopCurrentThread):
-            print("Thread: ", threading.current_thread().name, "stopped")
-            stopCurrentThread = False
-            # setVelocity(0, 0, clientID, rightMotor, leftMotor)
-            return
-
-    # Finalizes thread if not interrupted before
-    print("Thread: ", threading.current_thread().name, "finished.")
     global currentThreadName
-    currentThreadName = ""
-    setVelocity(0, 0, clientID, rightMotor, leftMotor)
-
-
-def goBack(clientID, rightMotor, leftMotor):
-    print("Thread: ", threading.current_thread().name, "started.")
-    timeConstant = 5
-
+    global stopCurrentThread
+    stopCurrentThread = False
+    print(RED, "Thread: ", threading.current_thread().name, "started.", RESET)
+    
     # Starts to go back
-    setVelocity(1.15*timeConstant, 1.15*timeConstant, clientID, rightMotor, leftMotor)
-
-    finalTime = time.time() + (1/timeConstant)
+    setVelocity(1.15*TIME_CONST, 1.15*TIME_CONST, clientID, rightMotor, leftMotor)
+    
+    finalTime = time.time() + (1/TIME_CONST)
     while(time.time() < finalTime):
-        global stopCurrentThread
         if(stopCurrentThread):
             print("Thread: ", threading.current_thread().name, "stopped")
             stopCurrentThread = False
+            currentThreadName = ""
+
+            # setVelocity(0, 0, clientID, rightMotor, leftMotor)
+            return
+
+    # Starts to turn
+    setVelocity(-1.1*TIME_CONST, 1.1*TIME_CONST, clientID, rightMotor, leftMotor)
+    
+    finalTime = time.time() + (1/TIME_CONST)
+    while(time.time() < finalTime):
+        if(stopCurrentThread):
+            print(RED, "Thread: ", threading.current_thread().name, "stopped", RESET)
+            stopCurrentThread = False
+            currentThreadName = ""
             # setVelocity(0, 0, clientID, rightMotor, leftMotor)
             return
 
     # Finalizes thread if not interrupted before
-    print("Thread: ", threading.current_thread().name, "finished.")
-    global currentThreadName
+    print(RED, "Thread: ", threading.current_thread().name, "finished.", RESET)
     currentThreadName = ""
     setVelocity(0, 0, clientID, rightMotor, leftMotor)
+
+# TA DENTRO DA DE VIRAR AGORA
+
+# def goBack(clientID, rightMotor, leftMotor):
+#     global currentThreadName
+#     global stopCurrentThread
+#     stopCurrentThread = False
+
+#     print("Thread: ", threading.current_thread().name, "started.")
+
+#     # Starts to go back
+#     setVelocity(1.15*TIME_CONST, 1.15*TIME_CONST, clientID, rightMotor, leftMotor)
+
+#     finalTime = time.time() + (1/TIME_CONST)
+#     while(time.time() < finalTime):
+#         if(stopCurrentThread):
+#             print("Thread: ", threading.current_thread().name, "stopped")
+#             stopCurrentThread = False
+#             currentThreadName = ""
+
+#             # setVelocity(0, 0, clientID, rightMotor, leftMotor)
+#             return
+
+#     # Finalizes thread if not interrupted before
+#     print("Thread: ", threading.current_thread().name, "finished.")
+#     currentThreadName = ""
+#     setVelocity(0, 0, clientID, rightMotor, leftMotor)
 
 def accelerate(clientID, rightMotor, leftMotor):
+    global currentThreadName
+    global stopCurrentThread
+    stopCurrentThread = False
+
     print("Thread: ", threading.current_thread().name, "started.")
     duration = 0.2 # Impulse of 200ms
 
@@ -232,16 +273,16 @@ def accelerate(clientID, rightMotor, leftMotor):
     
     finalTime = time.time() + duration
     while(time.time() < finalTime):
-        global stopCurrentThread
         if(stopCurrentThread):
             print("Thread: ", threading.current_thread().name, "stopped")
             stopCurrentThread = False
+            currentThreadName = ""
+
             # setVelocity(0, 0, clientID, rightMotor, leftMotor)
             return
 
     # Finalizes thread if not interrupted before
     print("Thread: ", threading.current_thread().name, "finished.")
-    global currentThreadName
     currentThreadName = ""
     setVelocity(0, 0, clientID, rightMotor, leftMotor)
 
@@ -258,16 +299,30 @@ sim.simxAddStatusbarMessage(clientID, "ControllerWaiting!", sim.simx_opmode_ones
 # Variáveis globais
 stopCurrentThread = False
 currentThreadName = ""
-
+lastTime = 0
+global temperature
 
 startTime = time.time()
 while(True):
+
+    # Random temperature number
+    temperature = random.randrange(0, 101)
+
     # Go ahead
     print("Thread count: {}".format(threading.active_count()))
 
     # If there is no other active thread, go 
     if(threading.active_count() == 1):
-        setVelocity(-1, -1, clientID, rightMotor, leftMotor)
+        setVelocity(-2, -2, clientID, rightMotor, leftMotor)
+
+    # Read Temperature
+    if time.time() - lastTime > 0.3:
+        if(temperature > 90):
+            print(RED, "TEMPERATURA MUITO ALTA:", temperature, RESET)
+            setVelocity(0, 0, clientID, rightMotor, leftMotor) 
+            break
+        lastTime = time.time()
+        print(BLUE, "Temperatura OK:", temperature, RESET)
 
     # Receive sensor information
     data = conn.recv(64)
@@ -283,7 +338,6 @@ while(True):
     # Basic funcionality
     if(correctData == "LineDetected."):
         print("Detectou linha!!")
-        setVelocity(0, 0, clientID, rightMotor, leftMotor)
         initiateThread('LineDetected.', clientID, leftMotor, rightMotor)
     elif(correctData == "Emergency."): # Emergência tá com prioridade menor que linha aqui, mas era só pra testar
         print("Emergência - Finalizando programa")
@@ -307,6 +361,7 @@ while(True):
         conn.close()
         break
 
+
 # Statistics
 print("Program duration: ", time.time()-startTime)
 
@@ -314,5 +369,7 @@ print("Program duration: ", time.time()-startTime)
 print("Server finished!")
 sim.simxAddStatusbarMessage(clientID, "ControllerFinished!", sim.simx_opmode_oneshot_wait)
 sim.simxFinish(clientID)
+
+
 
 

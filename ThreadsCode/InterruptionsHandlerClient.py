@@ -3,11 +3,13 @@ import sys
 import time 
 import numpy as np
 import socket
+
+
  
 # Adding directories for linux and mac
 if(sys.platform == "linux" or sys.platform == "linux2"):
     sys.path.append('/home/rafael-barbosa/ptr_project/PyBinding')
-elif(sys.sys.platform == 'darwin'):
+elif(sys.platform == 'darwin'):
     sys.path.append('/Users/admin/Documents/Mecatronica/8o semestre/PTR/Projeto 2/codigo')
 
 # Connects python to Coppelia
@@ -16,7 +18,7 @@ import sim
 
 # Connect to server controler
 HOST = 'localhost'
-PORT = 50006
+PORT = 50007
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
     s.connect((HOST, PORT))
@@ -108,6 +110,8 @@ while(time.time() < finalTime):
         clientID, emergencySensor, sim.simx_opmode_buffer)
 
     
+  
+
 
     # Sending information
     if(detectionStateEmergency):

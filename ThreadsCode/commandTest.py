@@ -9,7 +9,7 @@ import threading
 # Adding directories for linux and mac
 if(sys.platform == "linux" or sys.platform == "linux2"):
     sys.path.append('/home/rafael-barbosa/ptr_project/PyBinding')
-elif(sys.sys.platform == 'darwin'):
+elif(sys.platform == 'darwin'):
     sys.path.append('/Users/admin/Documents/Mecatronica/8o semestre/PTR/Projeto 2/codigo')
 
 # Module to connect python to Coppelia
