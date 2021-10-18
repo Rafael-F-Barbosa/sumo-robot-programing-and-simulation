@@ -29,7 +29,7 @@ import sim
 
 # Create server connection and listen 
 HOST = 'localhost'
-PORT = 50010
+PORT = 50013
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
     s.bind((HOST, PORT))
@@ -48,7 +48,7 @@ print("Connected to", add)
 sim.simxFinish(-1)
 
 # Connect to CoppeliaSim
-clientID = sim.simxStart('127.0.0.1', 19998, True, True, 5000, 5)
+clientID = sim.simxStart('127.0.0.1', 20001, True, True, 5000, 5)
 
 # End program if connection failed
 if clientID != -1:
@@ -61,17 +61,17 @@ else:
 
 # Get motor handlers
 errorLeftMotor, leftMotor = sim.simxGetObjectHandle(
-    clientID, "Pioneer_p3dx_leftMotor", sim.simx_opmode_oneshot_wait)
+    clientID, "Pioneer_p3dx_leftMotor#0", sim.simx_opmode_oneshot_wait)
 errorRightMotor, rightMotor = sim.simxGetObjectHandle(
-    clientID, "Pioneer_p3dx_rightMotor", sim.simx_opmode_oneshot_wait)
+    clientID, "Pioneer_p3dx_rightMotor#0", sim.simx_opmode_oneshot_wait)
 
 # Temperature sensor handler
 errorTemperatureSensor, temperatureSensor = sim.simxGetObjectHandle(
-    clientID, "TemperatureSensor", sim.simx_opmode_oneshot_wait)
+    clientID, "TemperatureSensor#0", sim.simx_opmode_oneshot_wait)
 
 # Print in handlers connections
 print("Handlers: (0 == alright)")
-print(errorLeftMotor, errorRightMotor)
+print(errorLeftMotor, errorRightMotor, errorTemperatureSensor)
 
 
 # Threads controller ---------------------------------------------------
@@ -241,7 +241,7 @@ def accelerate(clientID, rightMotor, leftMotor):
     duration = 0.2 # Impulse of 200ms
 
     # Sets velocity
-    setVelocity(-3, -3, clientID, rightMotor, leftMotor)
+    setVelocity(-2, -2, clientID, rightMotor, leftMotor)
     
     finalTime = time.time() + duration
     while(time.time() < finalTime):
@@ -313,7 +313,7 @@ while(True):
 
     # If there is no other active thread, go 
     if(threading.active_count() == 1):
-        setVelocity(-2, -2, clientID, rightMotor, leftMotor)
+        setVelocity(-1, -1, clientID, rightMotor, leftMotor)
 
     # Read Temperature
     if time.time() - lastTime > 0.3:

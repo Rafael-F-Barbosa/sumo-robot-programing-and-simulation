@@ -18,7 +18,7 @@ import sim
 
 # Connect to server controler
 HOST = 'localhost'
-PORT = 50010
+PORT = 50013
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
     s.connect((HOST, PORT))
@@ -32,7 +32,7 @@ except:
 sim.simxFinish(-1)
 
 # Connect to CoppeliaSim
-clientID = sim.simxStart('127.0.0.1', 19999, True, True, 5000, 5)
+clientID = sim.simxStart('127.0.0.1', 20000, True, True, 5000, 5)
 
 # End program if connection failed
 if clientID != -1:
@@ -45,15 +45,15 @@ else:
 
 # Get sensor handlers
 errorLeftSensor, leftSensor = sim.simxGetObjectHandle(
-    clientID, "Pioneer_p3dx_ultrasonicSensor9", sim.simx_opmode_oneshot_wait)
+    clientID, "Pioneer_p3dx_ultrasonicSensor9#0", sim.simx_opmode_oneshot_wait)
 errorRightSensor, rightSensor = sim.simxGetObjectHandle(
-    clientID, "Pioneer_p3dx_ultrasonicSensor16", sim.simx_opmode_oneshot_wait)
+    clientID, "Pioneer_p3dx_ultrasonicSensor16#0", sim.simx_opmode_oneshot_wait)
 errorFrontSensor, frontSensor = sim.simxGetObjectHandle(
-    clientID, "Pioneer_p3dx_ultrasonicSensor13", sim.simx_opmode_oneshot_wait)
+    clientID, "Pioneer_p3dx_ultrasonicSensor13#0", sim.simx_opmode_oneshot_wait)
 
 # Infrared sensor
 errorInfraredSensor, infraredSensor = sim.simxGetObjectHandle(
-    clientID, "Vision_sensor", sim.simx_opmode_oneshot_wait)
+    clientID, "Vision_sensor#0", sim.simx_opmode_oneshot_wait)
 
 # Emergency Button
 errorEmergencySensor, emergencySensor = sim.simxGetObjectHandle(
