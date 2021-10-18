@@ -8,7 +8,7 @@ import socket
  
 # Adding directories for linux and mac
 if(sys.platform == "linux" or sys.platform == "linux2"):
-    sys.path.append('/home/rafael-barbosa/ptr_project/PyBinding')
+    sys.path.append('/home/rafael-barbosa/ptr_alternatives/ptr_project/PyBinding')
 elif(sys.platform == 'darwin'):
     sys.path.append('/Users/admin/Documents/Mecatronica/8o semestre/PTR/Projeto 2/codigo')
 
@@ -18,7 +18,7 @@ import sim
 
 # Connect to server controler
 HOST = 'localhost'
-PORT = 50007
+PORT = 50008
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
     s.connect((HOST, PORT))
@@ -95,7 +95,7 @@ sim.simxAddStatusbarMessage(clientID, "SensorsInitialized!", sim.simx_opmode_one
 
 
 # Simulate for some seconds
-finalTime = time.time() + 30
+finalTime = time.time() + 90
 while(time.time() < finalTime):
     # Read sensors
     returnCode, resolution, image = sim.simxGetVisionSensorImage(clientID,infraredSensor, 1, sim.simx_opmode_buffer)

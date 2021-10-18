@@ -19,7 +19,7 @@ REVERSE = "\033[;7m"
 
 # Adding directories for linux and mac
 if(sys.platform == "linux" or sys.platform == "linux2"):
-    sys.path.append('/home/rafael-barbosa/ptr_project/PyBinding')
+    sys.path.append('/home/rafael-barbosa/ptr_alternatives/ptr_project/PyBinding')
 elif(sys.platform == 'darwin'):
     sys.path.append('/Users/admin/Documents/Mecatronica/8o semestre/PTR/Projeto 2/codigo')
 
@@ -29,7 +29,7 @@ import sim
 
 # Create server connection and listen 
 HOST = 'localhost'
-PORT = 50007
+PORT = 50008
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
     s.bind((HOST, PORT))
@@ -59,19 +59,22 @@ else:
     sys.exit()
 
 
-
 # Get motor handlers
 errorLeftMotor, leftMotor = sim.simxGetObjectHandle(
     clientID, "Pioneer_p3dx_leftMotor", sim.simx_opmode_oneshot_wait)
 errorRightMotor, rightMotor = sim.simxGetObjectHandle(
     clientID, "Pioneer_p3dx_rightMotor", sim.simx_opmode_oneshot_wait)
 
+# Temperature sensor handler
+errorTemperatureSensor, temperatureSensor = sim.simxGetObjectHandle(
+    clientID, "TemperatureSensor", sim.simx_opmode_oneshot_wait)
+
 # Print in handlers connections
 print("Handlers: (0 == alright)")
 print(errorLeftMotor, errorRightMotor)
 
 
-# Turn options right, left, 180
+# Threads controller ---------------------------------------------------
 def initiateThread(direction, clientID, rightMotor, leftMotor):
 
     global clientRequests
@@ -84,16 +87,16 @@ def initiateThread(direction, clientID, rightMotor, leftMotor):
         actionPriority  = clientRequests.index(direction)
         currentPriority = clientRequests.index(currentThreadName)
 
-        #pra debugar
+        # Debugging purpose
         print("CURRENT PRIORITY:", currentPriority)
         print("ACTION PRIORITY:", actionPriority)
 
-        # Se a tarefa for de prioridade inferior ou igual não executará
+        # If new task isn't highest priority it's not executed 
         if(currentPriority <= actionPriority):
             print("Action {} is less important or equal.".format(direction)) 
             return
 
-        # Se a prioridade for maior, é interrompida a thread atual e a nova assume
+        # If new taks is highest priority interrupts the other and execute
         else:
             print("Interrupts {} e runs {}!".format(currentThreadName, direction))
             stopCurrentThread = True
@@ -104,14 +107,14 @@ def initiateThread(direction, clientID, rightMotor, leftMotor):
 
     
     if(direction == 'EnemyOnLeft.'):
-        # Criada thread de virar a esquerda
+        # Create thread turn left
         t = threading.Thread(target=turnLeft, name=direction, args=(clientID, rightMotor, leftMotor))
 
         # Inicialize thread
         t.start()
 
     elif(direction == 'EnemyOnRight.'):
-        # Criada thread de virar a direita
+        # Create thread turn right
         t = threading.Thread(target=turnRight, name=direction, args=(clientID, rightMotor, leftMotor))
 
         # Inicialize thread
@@ -137,15 +140,14 @@ def initiateThread(direction, clientID, rightMotor, leftMotor):
 
 
 
-# Function to set a velocity
+# Function to set a velocity ------------------------------------------
 def setVelocity(leftV, rightV, clientID, rightMotor, leftMotor):
     sim.simxSetJointTargetVelocity(
         clientID, leftMotor, leftV, sim.simx_opmode_oneshot_wait)
     sim.simxSetJointTargetVelocity(
         clientID, rightMotor, rightV, sim.simx_opmode_oneshot_wait)
 
-# Threads
-
+# Threads -------------------------------------------------------------
 def turnRight(clientID, rightMotor, leftMotor):
     global currentThreadName
     global stopCurrentThread
@@ -212,8 +214,6 @@ def turn180(clientID, rightMotor, leftMotor):
             print("Thread: ", threading.current_thread().name, "stopped")
             stopCurrentThread = False
             currentThreadName = ""
-
-            # setVelocity(0, 0, clientID, rightMotor, leftMotor)
             return
 
     # Starts to turn
@@ -225,40 +225,12 @@ def turn180(clientID, rightMotor, leftMotor):
             print(RED, "Thread: ", threading.current_thread().name, "stopped", RESET)
             stopCurrentThread = False
             currentThreadName = ""
-            # setVelocity(0, 0, clientID, rightMotor, leftMotor)
             return
 
     # Finalizes thread if not interrupted before
     print(RED, "Thread: ", threading.current_thread().name, "finished.", RESET)
     currentThreadName = ""
     setVelocity(0, 0, clientID, rightMotor, leftMotor)
-
-# TA DENTRO DA DE VIRAR AGORA
-
-# def goBack(clientID, rightMotor, leftMotor):
-#     global currentThreadName
-#     global stopCurrentThread
-#     stopCurrentThread = False
-
-#     print("Thread: ", threading.current_thread().name, "started.")
-
-#     # Starts to go back
-#     setVelocity(1.15*TIME_CONST, 1.15*TIME_CONST, clientID, rightMotor, leftMotor)
-
-#     finalTime = time.time() + (1/TIME_CONST)
-#     while(time.time() < finalTime):
-#         if(stopCurrentThread):
-#             print("Thread: ", threading.current_thread().name, "stopped")
-#             stopCurrentThread = False
-#             currentThreadName = ""
-
-#             # setVelocity(0, 0, clientID, rightMotor, leftMotor)
-#             return
-
-#     # Finalizes thread if not interrupted before
-#     print("Thread: ", threading.current_thread().name, "finished.")
-#     currentThreadName = ""
-#     setVelocity(0, 0, clientID, rightMotor, leftMotor)
 
 def accelerate(clientID, rightMotor, leftMotor):
     global currentThreadName
@@ -286,6 +258,31 @@ def accelerate(clientID, rightMotor, leftMotor):
     currentThreadName = ""
     setVelocity(0, 0, clientID, rightMotor, leftMotor)
 
+def readTemperature(clientID, temperatureSensor):
+    global currentThreadName
+    global stopCurrentThread
+    global temperatureFlag
+    stopCurrentThread = False
+
+    print(CYAN, "Thread: ", threading.current_thread().name, "started", RESET)
+
+    # Read temperature
+    returnCodeEmergency, detectionStateEmergency, detectedPointEmergency, detectedObjectHandEmergency, detectedSurfaceNormalVectorEmergency = sim.simxReadProximitySensor(
+        clientID, temperatureSensor, sim.simx_opmode_buffer)
+
+    # If temperature is too high
+    if(detectionStateEmergency):
+        print(RED, "Tá quentão, mané, melhor parar!", RESET)
+        setVelocity(0, 0, clientID, rightMotor, leftMotor)
+        temperatureFlag = True
+        return
+
+    # Finalizes thread if not interrupted before
+    print(CYAN, "Thread: ", threading.current_thread().name, "finished.", RESET)
+    # currentThreadName = ""
+    # setVelocity(0, 0, clientID, rightMotor, leftMotor)
+
+
 
 
 # Client requests
@@ -296,12 +293,18 @@ clientRequests = ["Emergency.", "LineDetected.", "EnemyOnLeft.", "EnemyOnRight."
 sim.simxAddStatusbarMessage(clientID, "ControllerWaiting!", sim.simx_opmode_oneshot_wait)
 
 
+# Inicializa sensor de temperatura
+returnCode, detectionStateTemp, detectedPoint, detectedObjectHandle, detectedSurfaceNormalVector = sim.simxReadProximitySensor(clientID, temperatureSensor, sim.simx_opmode_streaming)
+
+
 # Variáveis globais
 stopCurrentThread = False
 currentThreadName = ""
+temperatureFlag = False
 lastTime = 0
 global temperature
 
+temperatureCounter = 0
 startTime = time.time()
 while(True):
 
@@ -317,33 +320,37 @@ while(True):
 
     # Read Temperature
     if time.time() - lastTime > 0.3:
-        if(temperature > 90):
-            print(RED, "TEMPERATURA MUITO ALTA:", temperature, RESET)
-            setVelocity(0, 0, clientID, rightMotor, leftMotor) 
-            break
+        temperatureCounter += 1
+        t = threading.Thread(target=readTemperature, name="ReadTemperature.", args=(clientID, temperatureSensor))
+        t.start()
         lastTime = time.time()
-        print(BLUE, "Temperatura OK:", temperature, RESET)
 
     # Receive sensor information
     data = conn.recv(64)
     print(data)
 
-    # Processa data
+    # Processa incoming interruptions
     if(data not in clientRequests):
         tokens = data.decode().split(".")
         correctData = tokens[-2] + "."
 
     print("CorrectedData: ", correctData)
 
-    # Basic funcionality
-    if(correctData == "LineDetected."):
-        print("Detectou linha!!")
-        initiateThread('LineDetected.', clientID, leftMotor, rightMotor)
-    elif(correctData == "Emergency."): # Emergência tá com prioridade menor que linha aqui, mas era só pra testar
+    # Basic actions
+    if(correctData == "Emergency."):
         print("Emergência - Finalizando programa")
         setVelocity(0, 0, clientID, rightMotor, leftMotor) 
         sim.simxAddStatusbarMessage(clientID, "Emergência, irmão, para tudo!!!!", sim.simx_opmode_oneshot_wait)
         break
+
+    elif(temperatureFlag):
+        setVelocity(0, 0, clientID, rightMotor, leftMotor)
+        sim.simxAddStatusbarMessage(clientID, "Tá pegando fogo bicho!", sim.simx_opmode_oneshot_wait)
+        break
+
+    elif(correctData == "LineDetected."):
+        print("Detectou linha!!")
+        initiateThread('LineDetected.', clientID, leftMotor, rightMotor)
     elif(correctData == "EnemyOnLeft."):
         print("Detectou esquerda!!")
         initiateThread('EnemyOnLeft.', clientID, rightMotor,leftMotor)
@@ -363,10 +370,15 @@ while(True):
 
 
 # Statistics
-print("Program duration: ", time.time()-startTime)
+programDuration = time.time()-startTime
+
+print("Program duration:", programDuration)
+
+print("Temperature frequency:", 1/(temperatureCounter/programDuration))
 
 # Ends communication with server
 print("Server finished!")
+setVelocity(0, 0, clientID, rightMotor, leftMotor) 
 sim.simxAddStatusbarMessage(clientID, "ControllerFinished!", sim.simx_opmode_oneshot_wait)
 sim.simxFinish(clientID)
 
