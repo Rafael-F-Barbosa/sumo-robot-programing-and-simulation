@@ -8,9 +8,15 @@ import threading
 import datetime
 
 
-from pyextremes import __version__, get_extremes
+from pyextremes import __version__, get_extremes, EVA
 from pyextremes.plotting import plot_extremes
 from pyextremes import EVA
+
+
+from scipy.stats import genextreme
+import matplotlib.pyplot as plt
+fig, ax = plt.subplots(1, 1)
+
 
 
 # Constants
@@ -417,27 +423,45 @@ print(GREEN, 'DESVIO PADRÃO: ', np.std(measurementsList), RESET)
 
 date_index = pd.date_range('12/29/2009', periods=250, freq='D')
 measurementsSeries = pd.Series(measurementsList, index=date_index)     
-print(measurementsSeries)       
+# print(measurementsSeries)       
 
 
-extremes = get_extremes(
-    ts=measurementsSeries,
-    method="BM",
-    extremes_type="high",
-    block_size="10D",
-)
-fig, ax = plot_extremes(
-    ts=measurementsSeries,
-    extremes=extremes,
-    extremes_method="BM",
-    extremes_type="high",
-    block_size="10D",
-    figsize=(8, 5),
-)
-print(extremes)
+# extremes = get_extremes(
+#     ts=measurementsSeries,
+#     method="BM",
+#     extremes_type="high",
+#     block_size="5D",
+# )
+# fig, ax = plot_extremes(
+#     ts=measurementsSeries,
+#     extremes=extremes,
+#     extremes_method="BM",
+#     extremes_type="high",
+#     block_size="5D",
+#     figsize=(8, 5),
+# )
+# print(extremes)
+
+# Cria um modelo a partir das medidas
+model = EVA(measurementsSeries)
+
+# Obtém os extremos pelo método blocos de máximos
+model.get_extremes(method="BM",extremes_type="high",
+    block_size="10D")
+
+fig, ax = model.plot_extremes()
+
+fig.savefig("aaaaaa.png", dpi=96, bbox_inches="tight")
 
 
-fig.savefig("bm-high-1y.png", dpi=96, bbox_inches="tight")
+# Encontra o modelo para a distribuição generalizada de valores extremos
+model.fit_model()
+
+
+# Obtém gráficos do modelo
+fig2, ax2 = model.plot_diagnostic(alpha=0.95,  figsize=(16, 10))
+
+fig2.savefig("bbbbbb.png", dpi=96, bbox_inches="tight")
 
 
 
