@@ -17,9 +17,11 @@ RESET = "\033[0;0m"
 BOLD = "\033[;1m"
 REVERSE = "\033[;7m"
 
+# Run in your computer changing this directory to a path to folder PyBindingLinux or PyBindingMac
+# It should be an absolute path
 # Adding directories for linux and mac
 if(sys.platform == "linux" or sys.platform == "linux2"):
-    sys.path.append('/home/rafael-barbosa/ptr_alternatives/ptr_project/PyBinding')
+    sys.path.append('/home/rafael-barbosa/sumo-robot-programing-and-simulation/PyBindingLinux')
 elif(sys.platform == 'darwin'):
     sys.path.append('/Users/admin/Documents/GitHub/sumo-robot-programing-and-simulation/PyBindingMac')
 

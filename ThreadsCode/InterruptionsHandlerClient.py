@@ -5,10 +5,11 @@ import numpy as np
 import socket
 
 
- 
+# Run in your computer changing this directory to a path to folder PyBindingLinux or PyBindingMac
+# It should be an absolute path
 # Adding directories for linux and mac
 if(sys.platform == "linux" or sys.platform == "linux2"):
-    sys.path.append('/home/rafael-barbosa/ptr_alternatives/ptr_project/PyBinding')
+    sys.path.append('/home/rafael-barbosa/sumo-robot-programing-and-simulation/PyBindingLinux')
 elif(sys.platform == 'darwin'):
     sys.path.append('/Users/admin/Documents/GitHub/sumo-robot-programing-and-simulation/PyBindingMac')
 
@@ -59,17 +60,13 @@ errorInfraredSensor, infraredSensor = sim.simxGetObjectHandle(
 errorEmergencySensor, emergencySensor = sim.simxGetObjectHandle(
     clientID, "EmergencySensor", sim.simx_opmode_oneshot_wait)
 
-# Temperature sensor - Esse aqui acho que vai ficar no controller mesmo
-errorTemperatureSensor, temperatureSensor = sim.simxGetObjectHandle(
-    clientID, "TemperatureSensor", sim.simx_opmode_oneshot_wait)
-
 # Print in handlers connections
 print("Handlers: (0 == alright)")
-print(errorLeftSensor, errorRightSensor, errorFrontSensor, errorInfraredSensor, errorEmergencySensor, errorTemperatureSensor)
+print(errorLeftSensor, errorRightSensor, errorFrontSensor, errorInfraredSensor, errorEmergencySensor)
 
 
 # Read sensors first time
-def initializeSensors(clientID, leftSensor, rightSensor, frontSensor, infraredSensor, emergencySensor, temperatureSensor):
+def initializeSensors(clientID, leftSensor, rightSensor, frontSensor, infraredSensor, emergencySensor):
     # Car sensors
     returnCode, detectionState, detectedPoint, detectedObjectHandle, detectedSurfaceNormalVector = sim.simxReadProximitySensor(
         clientID, leftSensor, sim.simx_opmode_streaming)
@@ -83,13 +80,10 @@ def initializeSensors(clientID, leftSensor, rightSensor, frontSensor, infraredSe
     returnCode, detectionState, detectedPoint, detectedObjectHandle, detectedSurfaceNormalVector = sim.simxReadProximitySensor(
         clientID, emergencySensor, sim.simx_opmode_streaming)
 
-    # Temperature Sensor - Remote control
-    returnCode, detectionStateTemp, detectedPoint, detectedObjectHandle, detectedSurfaceNormalVector = sim.simxReadProximitySensor(
-        clientID, temperatureSensor, sim.simx_opmode_streaming)
 
 
 # Main ----------------------------------------------------------------------------------------------------
-initializeSensors(clientID, leftSensor, rightSensor, frontSensor, infraredSensor, emergencySensor, temperatureSensor)
+initializeSensors(clientID, leftSensor, rightSensor, frontSensor, infraredSensor, emergencySensor)
 sim.simxAddStatusbarMessage(clientID, "SensorsInitialized!", sim.simx_opmode_oneshot_wait)
 
 

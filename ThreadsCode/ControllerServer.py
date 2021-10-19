@@ -1,10 +1,20 @@
 # Import modules 
 import sys  
 import time 
-import numpy as np
 import socket
 import threading
-import random 
+
+# Run in your computer changing this directory to a path to folder PyBindingLinux or PyBindingMac
+# It should be an absolute path
+# Adding directories for linux and mac 
+if(sys.platform == "linux" or sys.platform == "linux2"):
+    sys.path.append('/home/rafael-barbosa/sumo-robot-programing-and-simulation/PyBindingLinux')
+elif(sys.platform == 'darwin'):
+    sys.path.append('/Users/admin/Documents/GitHub/sumo-robot-programing-and-simulation/PyBindingMac')
+
+# Module to connect python to Coppelia
+import sim
+
 # Constants
 TIME_CONST = 5
 
@@ -16,15 +26,6 @@ GREEN = "\033[0;32m"
 RESET = "\033[0;0m"
 BOLD = "\033[;1m"
 REVERSE = "\033[;7m"
-
-# Adding directories for linux and mac
-if(sys.platform == "linux" or sys.platform == "linux2"):
-    sys.path.append('/home/rafael-barbosa/ptr_alternatives/ptr_project/PyBinding')
-elif(sys.platform == 'darwin'):
-    sys.path.append('/Users/admin/Documents/GitHub/sumo-robot-programing-and-simulation/PyBindingMac')
-
-# Module to connect python to Coppelia
-import sim
 
 
 # Create server connection and listen 
@@ -206,7 +207,7 @@ def turn180(clientID, rightMotor, leftMotor):
     print(RED, "Thread: ", threading.current_thread().name, "started.", RESET)
     
     # Starts to go back
-    setVelocity(1.15*TIME_CONST, 1.15*TIME_CONST, clientID, rightMotor, leftMotor)
+    setVelocity(1.05*TIME_CONST, 1.05*TIME_CONST, clientID, rightMotor, leftMotor)
     
     finalTime = time.time() + (1/TIME_CONST)
     while(time.time() < finalTime):
