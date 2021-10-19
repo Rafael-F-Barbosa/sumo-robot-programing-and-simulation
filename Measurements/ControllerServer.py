@@ -1,10 +1,18 @@
 # Import modules 
+from datetime import datetime
 import sys  
 import time 
 import numpy as np
-import socket
+import pandas as pd
 import threading
-import random 
+import datetime
+
+
+from pyextremes import __version__, get_extremes
+from pyextremes.plotting import plot_extremes
+from pyextremes import EVA
+
+
 # Constants
 TIME_CONST = 5
 
@@ -378,34 +386,58 @@ measurementsList = []
 #     t.join()
 
 # MEASUREMENTS READ TEMPERATURE
+for i in range(250):
+    # Criada thread de virar 180
+    t = threading.Thread(target=readTemperature, name='direction', args=(clientID, temperatureSensor))
+    # Inicializa thread
+    t.start()
+    t.join()
+
+# MEASUREMENTS EMERGENCY
 # for _ in range(250):
 #     # Criada thread de virar 180
-#     t = threading.Thread(target=readTemperature, name='direction', args=(clientID, temperatureSensor))
+#     t = threading.Thread(target=setVelocityMeasurement, name='direction', args=(0,0, clientID, rightMotor, leftMotor))
 #     # Inicializa thread
 #     t.start()
 #     t.join()
 
-# MEASUREMENTS EMERGENCY
-for _ in range(250):
-    # Criada thread de virar 180
-    t = threading.Thread(target=setVelocityMeasurement, name='direction', args=(0,0, clientID, rightMotor, leftMotor))
-    # Inicializa thread
-    t.start()
-    t.join()
-
 # MEASUREMENTS MOVE
-for _ in range(250):
-    # Criada thread de virar 180
-    t = threading.Thread(target=setVelocityMeasurement, name='direction', args=(-3,-3, clientID, rightMotor, leftMotor))
-    # Inicializa thread
-    t.start()
-    t.join()
+# for _ in range(250):
+#     # Criada thread de virar 180
+#     t = threading.Thread(target=setVelocityMeasurement, name='direction', args=(-3,-3, clientID, rightMotor, leftMotor))
+#     # Inicializa thread
+#     t.start()
+#     t.join()
 
 
 print(measurementsList)
 print(GREEN, 'MÉDIA: ', np.mean(measurementsList), RESET)
 print(GREEN, 'MAX: ', np.max(measurementsList), RESET)
 print(GREEN, 'DESVIO PADRÃO: ', np.std(measurementsList), RESET)
+
+date_index = pd.date_range('12/29/2009', periods=250, freq='D')
+measurementsSeries = pd.Series(measurementsList, index=date_index)     
+print(measurementsSeries)       
+
+
+extremes = get_extremes(
+    ts=measurementsSeries,
+    method="BM",
+    extremes_type="high",
+    block_size="10D",
+)
+fig, ax = plot_extremes(
+    ts=measurementsSeries,
+    extremes=extremes,
+    extremes_method="BM",
+    extremes_type="high",
+    block_size="10D",
+    figsize=(8, 5),
+)
+print(extremes)
+
+
+fig.savefig("bm-high-1y.png", dpi=96, bbox_inches="tight")
 
 
 
