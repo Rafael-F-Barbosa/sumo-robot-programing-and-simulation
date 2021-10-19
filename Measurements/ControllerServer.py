@@ -360,12 +360,12 @@ measurementsList = []
 
 
 # MEASUREMENTS TURN RIGHT
-for _ in range(250):
-    # Criada thread de virar 180
-    t = threading.Thread(target=turnRight, name='direction', args=(clientID, rightMotor, leftMotor))
-    # Inicializa thread
-    t.start()
-    t.join()
+# for _ in range(250):
+#     # Criada thread de virar 180
+#     t = threading.Thread(target=turnRight, name='direction', args=(clientID, rightMotor, leftMotor))
+#     # Inicializa thread
+#     t.start()
+#     t.join()
 
 # MEASUREMENTS ACCELERATE
 # for _ in range(250):
@@ -383,7 +383,7 @@ for _ in range(250):
 #     t.start()
 #     t.join()
 
-# MEASUREMENTS EMERGENCY
+# MEASUREMENTS EMERGENCY - STOP AND TURN OFF
 # for _ in range(250):
 #     # Criada thread de virar 180
 #     t = threading.Thread(target=setVelocityMeasurement, name='direction', args=(0,0, clientID, rightMotor, leftMotor))
@@ -392,15 +392,17 @@ for _ in range(250):
 #     t.join()
 
 # MEASUREMENTS MOVE
-# for _ in range(250):
-#     # Criada thread de virar 180
-#     t = threading.Thread(target=setVelocityMeasurement, name='direction', args=(-3,-3, clientID, rightMotor, leftMotor))
-#     # Inicializa thread
-#     t.start()
-#     t.join()
+for _ in range(250):
+    # Criada thread de virar 180
+    t = threading.Thread(target=setVelocityMeasurement, name='direction', args=(-3,-3, clientID, rightMotor, leftMotor))
+    # Inicializa thread
+    t.start()
+    t.join()
 
 
-print(measurementsList)
+# print(measurementsList)
+
+# Print statistics
 print(GREEN, 'MÉDIA: ', np.mean(measurementsList), RESET)
 print(GREEN, 'MAX: ', np.max(measurementsList), RESET)
 print(GREEN, 'DESVIO PADRÃO: ', np.std(measurementsList), RESET)
@@ -417,7 +419,7 @@ model.get_extremes(method="BM",extremes_type="high",
     block_size="10D")
 
 fig, ax = model.plot_extremes()
-fig.savefig("images/extremes-right.png", dpi=96, bbox_inches="tight")
+fig.savefig("images/extremes-move.png", dpi=96, bbox_inches="tight")
 
 
 # Encontra o modelo para a distribuição generalizada de valores extremos
@@ -426,7 +428,7 @@ model.fit_model()
 
 # Obtém gráficos do modelo
 fig2, ax2 = model.plot_diagnostic(alpha=0.95,  figsize=(16, 10))
-fig2.savefig("images/analisys-right.png", dpi=96, bbox_inches="tight")
+fig2.savefig("images/analisys-move.png", dpi=96, bbox_inches="tight")
 
 
 # Statistics
