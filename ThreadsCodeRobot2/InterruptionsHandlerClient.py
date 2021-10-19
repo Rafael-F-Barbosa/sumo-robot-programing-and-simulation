@@ -10,7 +10,7 @@ import socket
 if(sys.platform == "linux" or sys.platform == "linux2"):
     sys.path.append('/home/rafael-barbosa/ptr_alternatives/ptr_project/PyBinding')
 elif(sys.platform == 'darwin'):
-    sys.path.append('/Users/admin/Documents/Mecatronica/8o semestre/PTR/Projeto 2/codigo')
+    sys.path.append('/Users/admin/Documents/GitHub/sumo-robot-programing-and-simulation/PyBindingMac')
 
 # Connects python to Coppelia
 import sim  

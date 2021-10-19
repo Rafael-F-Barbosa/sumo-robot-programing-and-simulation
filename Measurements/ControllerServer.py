@@ -35,26 +35,10 @@ REVERSE = "\033[;7m"
 if(sys.platform == "linux" or sys.platform == "linux2"):
     sys.path.append('/home/rafael-barbosa/ptr_alternatives/ptr_project/PyBinding')
 elif(sys.platform == 'darwin'):
-    sys.path.append('/Users/admin/Documents/Mecatronica/8o semestre/PTR/Projeto 2/codigo')
+    sys.path.append('/Users/admin/Documents/GitHub/sumo-robot-programing-and-simulation/PyBindingMac')
 
 # Module to connect python to Coppelia
 import sim
-
-
-# Create server connection and listen 
-# HOST = 'localhost'
-# PORT = 50010
-# s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-# try:
-#     s.bind((HOST, PORT))
-# except:
-#     print("Failed to create server!")
-#     sys.exit()
-# s.listen()
-# print("Controller waiting client...")
-# # Connect to client
-# conn, add = s.accept()
-# print("Connected to", add)
 
 
 # Connect to CoppeliaSim
@@ -423,24 +407,7 @@ print(GREEN, 'DESVIO PADRÃO: ', np.std(measurementsList), RESET)
 
 date_index = pd.date_range('12/29/2009', periods=250, freq='D')
 measurementsSeries = pd.Series(measurementsList, index=date_index)     
-# print(measurementsSeries)       
 
-
-# extremes = get_extremes(
-#     ts=measurementsSeries,
-#     method="BM",
-#     extremes_type="high",
-#     block_size="5D",
-# )
-# fig, ax = plot_extremes(
-#     ts=measurementsSeries,
-#     extremes=extremes,
-#     extremes_method="BM",
-#     extremes_type="high",
-#     block_size="5D",
-#     figsize=(8, 5),
-# )
-# print(extremes)
 
 # Cria um modelo a partir das medidas
 model = EVA(measurementsSeries)
@@ -450,8 +417,7 @@ model.get_extremes(method="BM",extremes_type="high",
     block_size="10D")
 
 fig, ax = model.plot_extremes()
-
-fig.savefig("aaaaaa.png", dpi=96, bbox_inches="tight")
+fig.savefig("images/extremes-temp.png", dpi=96, bbox_inches="tight")
 
 
 # Encontra o modelo para a distribuição generalizada de valores extremos
@@ -460,86 +426,16 @@ model.fit_model()
 
 # Obtém gráficos do modelo
 fig2, ax2 = model.plot_diagnostic(alpha=0.95,  figsize=(16, 10))
-
-fig2.savefig("bbbbbb.png", dpi=96, bbox_inches="tight")
-
-
-
-# while(True):
-
-#     # Go ahead
-#     print("Thread count: {}".format(threading.active_count()))
-
-#     # If there is no other active thread, go 
-#     if(threading.active_count() == 1):
-#         setVelocity(-2, -2, clientID, rightMotor, leftMotor)
-
-#     # Read Temperature
-#     if time.time() - lastTime > 0.3:
-#         temperatureCounter += 1
-#         t = threading.Thread(target=readTemperature, name="ReadTemperature.", args=(clientID, temperatureSensor))
-#         t.start()
-#         lastTime = time.time()
-
-#     # Receive sensor information
-#     data = conn.recv(64)
-#     print(data)
-
-#     # Processa incoming interruptions
-#     if(data not in clientRequests):
-#         tokens = data.decode().split(".")
-#         if("LineDetected." in tokens):
-#             correctData = "LineDetected."
-#         else:
-#             correctData = tokens[-2] + "."
-
-
-#     print("CorrectedData: ", correctData)
-
-#     # Basic actions
-#     if(correctData == "Emergency."):
-#         print("Emergência - Finalizando programa")
-#         setVelocity(0, 0, clientID, rightMotor, leftMotor) 
-#         sim.simxAddStatusbarMessage(clientID, "Emergência, irmão, para tudo!!!!", sim.simx_opmode_oneshot_wait)
-#         break
-
-#     elif(temperatureFlag):
-#         setVelocity(0, 0, clientID, rightMotor, leftMotor)
-#         sim.simxAddStatusbarMessage(clientID, "Tá pegando fogo bicho!", sim.simx_opmode_oneshot_wait)
-#         break
-
-#     elif(correctData == "LineDetected."):
-#         print("Detectou linha!!")
-#         initiateThread('LineDetected.', clientID, leftMotor, rightMotor)
-#     elif(correctData == "EnemyOnLeft."):
-#         print("Detectou esquerda!!")
-#         initiateThread('EnemyOnLeft.', clientID, rightMotor,leftMotor)
-#         sim.simxAddStatusbarMessage(clientID, "Adversário à esquerda!!!!", sim.simx_opmode_oneshot_wait)
-#     elif(correctData == "EnemyOnRight."):
-#         print("Detectou direita!!")
-#         initiateThread('EnemyOnRight.', clientID, rightMotor,leftMotor)
-#         sim.simxAddStatusbarMessage(clientID, "Adversário à direita!!!!", sim.simx_opmode_oneshot_wait)
-#     elif(correctData == "EnemyOnFront."):
-#         print("Inimigo na frente, mané!")
-#         initiateThread('EnemyOnFront.', clientID, leftMotor, rightMotor)
-#         sim.simxAddStatusbarMessage(clientID, "Adversário à Frente!!!!", sim.simx_opmode_oneshot_wait)
-#     elif(correctData == 'Break.' or not data):
-#         setVelocity(0, 0, clientID, rightMotor, leftMotor) 
-#         conn.close()
-#         break
+fig2.savefig("images/analisys-temp.png", dpi=96, bbox_inches="tight")
 
 
 # Statistics
 programDuration = time.time()-startTime
-
 print("Program duration:", programDuration)
 
-# print("Temperature frequency:", 1/(temperatureCounter/programDuration))
 
 # Ends communication with server
-print("Server finished!")
 setVelocity(0, 0, clientID, rightMotor, leftMotor) 
-sim.simxAddStatusbarMessage(clientID, "ControllerFinished!", sim.simx_opmode_oneshot_wait)
 sim.simxFinish(clientID)
 
 
