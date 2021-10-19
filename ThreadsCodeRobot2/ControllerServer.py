@@ -6,7 +6,7 @@ import socket
 import threading
 import random 
 # Constants
-TIME_CONST = 5
+TIME_CONST = 7
 
 # Colors
 RED = "\033[1;31m"
@@ -241,7 +241,7 @@ def accelerate(clientID, rightMotor, leftMotor):
     duration = 0.2 # Impulse of 200ms
 
     # Sets velocity
-    setVelocity(-2, -2, clientID, rightMotor, leftMotor)
+    setVelocity(-3, -3, clientID, rightMotor, leftMotor)
     
     finalTime = time.time() + duration
     while(time.time() < finalTime):
@@ -313,7 +313,7 @@ while(True):
 
     # If there is no other active thread, go 
     if(threading.active_count() == 1):
-        setVelocity(-1, -1, clientID, rightMotor, leftMotor)
+        setVelocity(-2, -2, clientID, rightMotor, leftMotor)
 
     # Read Temperature
     if time.time() - lastTime > 0.3:
