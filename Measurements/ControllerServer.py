@@ -411,10 +411,10 @@ date_index = pd.date_range('12/29/2009', periods=250, freq='D')
 measurementsSeries = pd.Series(measurementsList, index=date_index)     
 
 
-# Cria um modelo a partir das medidas
+# Create a model with measurements
 model = EVA(measurementsSeries)
 
-# Obtém os extremos pelo método blocos de máximos
+# Obtain extreme by BM method
 model.get_extremes(method="BM",extremes_type="high",
     block_size="10D")
 
@@ -422,11 +422,11 @@ fig, ax = model.plot_extremes()
 fig.savefig("images/extremes-move.png", dpi=96, bbox_inches="tight")
 
 
-# Encontra o modelo para a distribuição generalizada de valores extremos
+# Find model to extreme values
 model.fit_model()
 
 
-# Obtém gráficos do modelo
+# Obtain model graphics
 fig2, ax2 = model.plot_diagnostic(alpha=0.95,  figsize=(16, 10))
 fig2.savefig("images/analisys-move.png", dpi=96, bbox_inches="tight")
 
