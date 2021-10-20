@@ -122,7 +122,7 @@ def initiateThread(direction, clientID, rightMotor, leftMotor):
         # Criada thread de virar 180
         t = threading.Thread(target=turn180, name=direction, args=(clientID, rightMotor, leftMotor))
 
-        # Inicializa thread
+        # Inicialize thread
         t.start()
 
     elif(direction == 'EnemyOnFront.'):
@@ -324,11 +324,11 @@ clientRequests = ["Emergency.", "LineDetected.", "EnemyOnLeft.", "EnemyOnRight."
 sim.simxAddStatusbarMessage(clientID, "ControllerWaiting!", sim.simx_opmode_oneshot_wait)
 
 
-# Inicializa sensor de temperatura
+# Inicialize temperature sensor
 returnCode, detectionStateTemp, detectedPoint, detectedObjectHandle, detectedSurfaceNormalVector = sim.simxReadProximitySensor(clientID, temperatureSensor, sim.simx_opmode_streaming)
 
 
-# Variáveis globais
+# Global variables
 stopCurrentThread = False
 currentThreadName = ""
 temperatureFlag = False

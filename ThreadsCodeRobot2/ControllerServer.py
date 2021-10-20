@@ -1,10 +1,8 @@
 # Import modules 
 import sys  
-import time 
-import numpy as np
+import time
 import socket
 import threading
-import random 
 # Constants
 TIME_CONST = 7
 
@@ -273,7 +271,7 @@ def readTemperature(clientID, temperatureSensor):
 
     # If temperature is too high
     if(detectionStateEmergency):
-        print(RED, "Tá quentão, mané, melhor parar!", RESET)
+        print(RED, "Temperatura alta, melhor parar!", RESET)
         setVelocity(0, 0, clientID, rightMotor, leftMotor)
         temperatureFlag = True
         return
@@ -294,11 +292,11 @@ clientRequests = ["Emergency.", "LineDetected.", "EnemyOnFront.", "EnemyOnLeft."
 sim.simxAddStatusbarMessage(clientID, "ControllerWaiting!", sim.simx_opmode_oneshot_wait)
 
 
-# Inicializa sensor de temperatura
+# Inicialize sensor temperature
 returnCode, detectionStateTemp, detectedPoint, detectedObjectHandle, detectedSurfaceNormalVector = sim.simxReadProximitySensor(clientID, temperatureSensor, sim.simx_opmode_streaming)
 
 
-# Variáveis globais
+# Gloval variables
 stopCurrentThread = False
 currentThreadName = ""
 temperatureFlag = False
@@ -363,7 +361,7 @@ while(True):
         initiateThread('EnemyOnRight.', clientID, rightMotor,leftMotor)
         sim.simxAddStatusbarMessage(clientID, "Adversário à direita!!!!", sim.simx_opmode_oneshot_wait)
     elif(correctData == "EnemyOnFront."):
-        print("Inimigo na frente, mané!")
+        print("Inimigo na frente!")
         initiateThread('EnemyOnFront.', clientID, leftMotor, rightMotor)
         sim.simxAddStatusbarMessage(clientID, "Adversário à Frente!!!!", sim.simx_opmode_oneshot_wait)
     elif(correctData == 'Break.' or not data):

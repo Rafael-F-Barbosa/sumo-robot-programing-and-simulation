@@ -272,7 +272,7 @@ def readTemperature(clientID, temperatureSensor):
 
     # If temperature is too high
     if(detectionStateEmergency):
-        print(RED, "Tá quentão, mané, melhor parar!", RESET)
+        print(RED, "Temperatura muito alta, melhor parar!", RESET)
         setVelocity(0, 0, clientID, rightMotor, leftMotor)
         temperatureFlag = True
         return
@@ -293,11 +293,11 @@ clientRequests = ["Emergency.", "LineDetected.", "EnemyOnFront.", "EnemyOnLeft."
 sim.simxAddStatusbarMessage(clientID, "ControllerWaiting!", sim.simx_opmode_oneshot_wait)
 
 
-# Inicializa sensor de temperatura
+# Inicialize temperature sensor
 returnCode, detectionStateTemp, detectedPoint, detectedObjectHandle, detectedSurfaceNormalVector = sim.simxReadProximitySensor(clientID, temperatureSensor, sim.simx_opmode_streaming)
 
 
-# Variáveis globais
+# Global variables
 stopCurrentThread = False
 currentThreadName = ""
 temperatureFlag = False
@@ -327,7 +327,7 @@ while(True):
     data = conn.recv(64)
     print(data)
 
-    # Processa incoming interruptions
+    # Process incoming interruptions
     if(data not in clientRequests):
         tokens = data.decode().split(".")
         if("LineDetected." in tokens):
@@ -342,12 +342,12 @@ while(True):
     if(correctData == "Emergency."):
         print("Emergência - Finalizando programa")
         setVelocity(0, 0, clientID, rightMotor, leftMotor) 
-        sim.simxAddStatusbarMessage(clientID, "Emergência, irmão, para tudo!!!!", sim.simx_opmode_oneshot_wait)
+        sim.simxAddStatusbarMessage(clientID, "Emergência, interrompendo programa!!!!", sim.simx_opmode_oneshot_wait)
         break
 
     elif(temperatureFlag):
         setVelocity(0, 0, clientID, rightMotor, leftMotor)
-        sim.simxAddStatusbarMessage(clientID, "Tá pegando fogo bicho!", sim.simx_opmode_oneshot_wait)
+        sim.simxAddStatusbarMessage(clientID, "Temperatura muito alta!", sim.simx_opmode_oneshot_wait)
         break
 
     elif(correctData == "LineDetected."):
@@ -362,7 +362,7 @@ while(True):
         initiateThread('EnemyOnRight.', clientID, rightMotor,leftMotor)
         sim.simxAddStatusbarMessage(clientID, "Adversário à direita!!!!", sim.simx_opmode_oneshot_wait)
     elif(correctData == "EnemyOnFront."):
-        print("Inimigo na frente, mané!")
+        print("Inimigo na frente!")
         initiateThread('EnemyOnFront.', clientID, leftMotor, rightMotor)
         sim.simxAddStatusbarMessage(clientID, "Adversário à Frente!!!!", sim.simx_opmode_oneshot_wait)
     elif(correctData == 'Break.' or not data):
